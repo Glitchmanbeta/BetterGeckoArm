@@ -2,7 +2,7 @@
 
 //Variables to keep track of the position of the joystick.
 unsigned int x_pos;
-unsigned in y_pos;
+unsigned int y_pos;
 
 //Variable to keep track of whether or not the spring has been activated.
 bool spring_state;
@@ -31,6 +31,10 @@ void setup() {
   OCR0A = 250;
   //The initial 62. Changing this will change the servo position.
   OCR0B = 62;
+
+  //Analog Setup
+  ADMUX = 0x40; //0b0100 0000
+  ADCSRA = 0x; //0b
 }
 
 //Runs until the end of time
