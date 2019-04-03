@@ -8,12 +8,14 @@ unsigned int y_pos;
 bool spring_state;
 
 //Variables for the servo positions.
-unsigned int base_pos;
-unsigned int elbow_pos;
-unsigned int stabilizer_pos;
+short base_pos = 12;
+short elbow_pos = 12;
+short stabilizer_pos = 12;
 
 //Debug variable so that the print statements can be disabled if need be.
 bool _DEBUG = true;
+
+short* ADCdata = 0x78;
 
 //Sets things up
 void setup() {
@@ -25,21 +27,30 @@ void setup() {
   DDRD = 0xF0;
   //Disconnecting Channel A, setting channel B to Fast PWM, clear on match.
   TCCR0A = 0x23;
-  //Setting the clock to divide by 64 and fixing the rest of the PWM setup.
-  TCCR0B = 0x0B;
-  //Making the frequency of the output signal about 1 kHz.
+  //Setting the clock to divide by 1024 and fixing the rest of the PWM setup.
+  TCCR0B = 0x0D;
+  TCCR2A = 0x23;
+  TCCR2B = 0x0D;
   OCR0A = 250;
-  //The initial 62. Changing this will change the servo position.
-  OCR0B = 62;
-
+  //The initial 24. Changing this will change the servo position.
+  OCR0B = 24;
+  OCR2A = 250;
+  OCR2B = 24;
   //Analog Setup
-  ADMUX = 0x40; //0b0100 0000
-  ADCSRA = 0x; //0b
+  ADMUX = 0x40;
+  ADCSRA = 0xE6;
+  ADCSRB = 0x40;
 }
 
 //Runs until the end of time
 void loop() {
-  //Joystick input comes later, want to make sure the serve control works first. (Also I don't yet know how analog control works with Arduino :) ).
-  //The following is simply a test to see how the servo will react to this. Will be altering it later, more testing must be done...
-  OCR0B += 1;
+  ADMUX &= 0;
+  base_pos = ((*ADCdata * 26) / 1024) + 12;
+  OCR0B = base_pos;
+
+  ADMUX |= 1;
+  delay(10);
+  elbow_pos = ((*ADCdata * 26) / 1024) + 12;
+  OCR2B = elbow_pos;
+  stabilizer_pos = elbow_pos;
 }
